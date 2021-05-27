@@ -163,7 +163,7 @@ async function GetCompleteTumbaCountingByDate(date_start,date_end,tumba)
 
     var lol = tumba.split("");
 
-    var dude = (lol[0] === "1" || lol[0] === "1" || lol[2] === "1");
+    var dude = (lol[0] === "1" || lol[1] === "1" || lol[2] === "1");
 
 
     console.log(lol);
