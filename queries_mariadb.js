@@ -4,6 +4,10 @@ module.exports =
     {
         return await Query("SELECT * FROM Customer");
     },
+    GetCustomerIdFromNumber: async function (customer_number)
+    {
+        return await Query("select id from Customer where number = " + customer_number + ";");
+    },
     GetCounts: async function ()
     {
         return await Query("SELECT * FROM Count");
@@ -19,6 +23,10 @@ module.exports =
     StartCounting: async function (customer_id)
     {
         return await StartCounting(customer_id);
+    },
+    StartCountingAtDate: async function (customer_number,date_string,time_string)
+    {
+        return await StartCountingAtDate(customer_number,date_string,time_string);
     },
     EndCounting: async function (customer_id)
     {
@@ -70,12 +78,31 @@ module.exports =
     GetStatuses: async function ()
     {
         return await GetStatuses();
+    },
+    CreateCustomer: async function (name,number,max_height,tumba)
+    {
+        return await CreateCustomer(name,number,max_height,tumba);
+    },
+    CustomerExists: async function (customer_id)
+    {
+        return await CustomerExists(customer_id);
+    },
+    CustomerNumberExists: async function (customer_number)
+    {
+        return await CustomerNumberExists(customer_number);
     }
 };
 
+const { Console } = require('console');
 const mariadb = require('mariadb');
 
+async function CreateCustomer(name,number,max_height,tumba)
+{
+    var query = "insert into Customer(name,number,max_height,tumba,locked) values('" + name + "'," + number + "," + max_height + "," + tumba + "," + false + ");";
+    console.log(query);
 
+    return await Query(query);
+}
 async function GetStatuses()
 {
     var query = "select * from Status;";
@@ -427,28 +454,64 @@ async function GetCountingByCustomerIdAndDate(customer_id,date_string)
     
     return await Query(query);  
 }
-
+async function CustomerExists(id)
+{
+    var query ="select * from Customer WHERE id = " + id + ";"; 
+    var rows = await Query(query);
+    return (rows.length > 0);
+}
+async function CustomerNumberExists(number)
+{
+    var query ="select * from Customer WHERE number = " + number + ";"; 
+    var rows = await Query(query);
+    return (rows.length > 0);
+}
+async function StartCountingAtDate(customer_id,date_string,time_string)
+{
+    if (await CustomerExists(customer_id))
+    {
+        if (!await HasOngoingCount(customer_id, date_string))
+        {
+            var result = await InitializeCounting(customer_id, date_string, time_string);
+            LockCustomer(customer_id, true);            
+        }
+        result = await GetCountingByCustomerIdAndDate(customer_id,date_string);
+        return result;
+    }
+    else
+    {
+        return "[]";
+    }  
+}
 async function StartCounting(customer_id)
 {
     var date_string = GetCurrentDateString();
 
-
-    if (!await HasOngoingCount(customer_id, date_string))
+    if (await CustomerExists(customer_id))
     {
-        var result = await InitializeCounting(customer_id, date_string, '"06:00"');
+        if (!await HasOngoingCount(customer_id, date_string))
+        {
+            var result = await InitializeCounting(customer_id, date_string, '"06:00"');
+            LockCustomer(customer_id, true);
+        }        
+        result = await GetCountingByCustomerIdAndDate(customer_id,date_string);
+        return result;
+    }
+    else
+    {
+        return "[]";
     }
 
-    LockCustomer(customer_id, true);
-
-    var result = await GetCountingByCustomerIdAndDate(customer_id,date_string);
-
-    return result;
+    
 
 }
 async function EndCounting(customer_id)
 {
     LockCustomer(customer_id, false);
 }
+
+
+
 async function InitializeCounting(customer_id, date_string,time_string)
 { 
     var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global)"; 

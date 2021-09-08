@@ -1,5 +1,6 @@
 
 var queries_maraidb = require('./queries_mariadb');
+var common = require('./common.js');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -143,6 +144,34 @@ app.post('/UpdateCountings', async (req, res) => {
 app.get('/GetCustomers', async (req, res) => {
 
     var rows = await queries_maraidb.GetCustomers();
+    res.send(rows);
+});
+app.get('/CustomerExists/:id', async (req, res) => {
+   
+    var id = req.param("id");
+    var rows = await queries_maraidb.CustomerExists(id);
+    res.send(rows);
+});
+app.get('/CustomerExists/:number', async (req, res) => {
+   
+    var id = req.param("number");
+    var rows = await queries_maraidb.CustomerNumberExists(number);
+    res.send(rows);
+});
+app.get('/CustomerNumberExists/:number', async (req, res) => {
+   
+    var id = req.param("number");
+    var rows = await queries_maraidb.CustomerNumberExists(id);
+    res.send(rows);
+});
+app.post('/CreateCustomer', async (req, res) => {
+
+    
+    customer_name = req.body.name;
+    customer_number = req.body.number;
+    max_height = req.body.max_height;
+    tumba = req.body.tumba;
+    var rows = await queries_maraidb.CreateCustomer(customer_name,customer_number,tumba,max_height);
     res.send(rows);
 });
 app.get('/GetCustomerById/:id', async (req, res) => {
@@ -313,6 +342,59 @@ app.get('/StartCounting/:id', async (req, res) => {
     {
         res.send("[]");
     }
+});
+app.get('/GetCustomerIdFromNumber/:number', async (req, res) => {
+
+    var number = req.param("number");
+    var rows = await queries_maraidb.GetCustomerIdFromNumber(number);
+    res.send(rows);
+});
+app.get('/StartCountingAtDate/:number/:date/:time', async (req, res) => {
+
+    var number = req.param("number");
+    var date = req.param("date");
+    var time = req.param("time");
+    number = number.toString().replace(/[^0-9]/g, '');
+
+    date = common.ParseDate(date);
+    time = common.ParseTime(time);
+
+    var today = common.GetCurrentDateString();
+
+    var today = new Date();
+    var y = today.getFullYear();
+
+    if(date.split('-')[0].replace("'","") + ">=" + y)
+    {
+        if(number.length > 0)
+        {
+            var rows = await queries_maraidb.GetCustomerIdFromNumber(number);
+            
+            if(rows.length > 0)
+            {
+                var id = rows[0].id;
+                rows = await queries_maraidb.StartCountingAtDate(id,date,time);
+                res.send(rows);
+            }
+            else
+            {
+                res.send("[]");
+            }
+            
+        }
+        else
+        {
+            res.send("[]");
+        }
+    }
+    else
+    {
+        res.send("[]");
+    }
+
+
+
+    
 });
 app.get('/GetCountingByCustomerIdAndDate/:id/:date', async (req, res) => {
     
