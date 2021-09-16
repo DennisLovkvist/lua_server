@@ -171,7 +171,7 @@ app.post('/CreateCustomer', async (req, res) => {
     customer_number = req.body.number;
     max_height = req.body.max_height;
     tumba = req.body.tumba;
-    var rows = await queries_maraidb.CreateCustomer(customer_name,customer_number,tumba,max_height);
+    var rows = await queries_maraidb.CreateCustomer(customer_name,customer_number,max_height,tumba);
     res.send(rows);
 });
 app.get('/GetCustomerById/:id', async (req, res) => {
