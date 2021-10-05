@@ -61,7 +61,7 @@ app.post('/UpdateCountingValue', async (req, res) => {
     var counting_control_id = req.param("counting_control_id").toString().replace(/[^0-9]/g, '');
     var department = req.param("department").toString().replace(/[^0-9]/g, '');
     var pallet_type = req.param("pallet_type").toString().replace(/[^0-9]/g, '');
-    var value = req.param("value").toString().replace(/[^0-9]/g, '');
+    var value = req.param("value");
 
     var valid_input = false;
 
@@ -71,10 +71,9 @@ app.post('/UpdateCountingValue', async (req, res) => {
         {
             if(pallet_type.length > 0)
             {
-                if(value.length > 0)
-                {
+                
                     valid_input = true;
-                }
+                
             }
         
         }
@@ -97,6 +96,18 @@ app.post('/UpdateCountingValue', async (req, res) => {
 
     
 });
+
+app.post('/UpdateStatusById', async (req, res) => {
+
+    var counting_control_id = req.body.counting_control_id;
+    var status_id = req.body.status_id;
+
+    var rows = await queries_maraidb.UpdateStatusById(counting_control_id,status_id);
+    console.log(rows);
+    res.send(rows);   
+    
+});
+
 app.post('/UpdateCountings', async (req, res) => {
 
     var ids = req.body.ids;
@@ -113,7 +124,7 @@ app.post('/UpdateCountings', async (req, res) => {
                 var n = 0;
                 for(var i = 0;i < counts.length;i++)
                 {
-                    if(Number.isInteger(counts[i]) && Number.isInteger(ids[i]))
+                    if(Number.isInteger(ids[i]))
                     {
                         n++;
                     }

@@ -90,6 +90,10 @@ module.exports =
     CustomerNumberExists: async function (customer_number)
     {
         return await CustomerNumberExists(customer_number);
+    },
+    UpdateStatusById: async function (counting_control_id,status_id)
+    {
+        return await UpdateStatusById(counting_control_id,status_id);
     }
 };
 
@@ -109,14 +113,19 @@ async function GetStatuses()
 
     return await Query(query);
 }
+async function UpdateStatusById(counting_control_id,status_id)
+{
+    var query = "UPDATE CountingControl SET status_id = " + status_id + " WHERE CountingControl.id = " + counting_control_id + ";";
+      
+    return await Query(query);
+}
 async function UpdateCountingValue(counting_control_id,department,pallet_type,value)
 {
-    var n = parseInt(value);
+    var n = parseFloat(value);
 
     if(!isNaN(n))
     {
         var query = "UPDATE Counting SET count = " + value + " WHERE Counting.counting_control_id = " + counting_control_id + " AND Counting.department_id = " + department + " AND Counting.pallet_type_id = " + pallet_type + ";";
-        
         return await Query(query);
     }
     
@@ -516,7 +525,7 @@ async function InitializeCounting(customer_id, date_string,time_string)
 { 
     var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global)"; 
 
-    query_string_cc += " values(" + customer_id + ",3," +  date_string + "," + time_string + ",False,False,False,False);"
+    query_string_cc += " values(" + customer_id + ",1," +  date_string + "," + time_string + ",False,False,False,False);"
 
 
     await Query(query_string_cc).then(async (res) =>     
