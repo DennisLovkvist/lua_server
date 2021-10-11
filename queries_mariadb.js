@@ -525,7 +525,7 @@ async function InitializeCounting(customer_id, date_string,time_string)
 { 
     var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global)"; 
 
-    query_string_cc += " values(" + customer_id + ",1," +  date_string + "," + time_string + ",False,False,False,False);"
+    query_string_cc += " values(" + customer_id + ",2," +  date_string + "," + time_string + ",False,False,False,False);"
 
 
     await Query(query_string_cc).then(async (res) =>     
