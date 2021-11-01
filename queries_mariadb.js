@@ -28,6 +28,10 @@ module.exports =
     {
         return await StartCountingAtDate(customer_number,date_string,time_string);
     },
+    StartCountingAtDate2: async function (customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+    {
+        return await StartCountingAtDate2(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure);
+    },
     EndCounting: async function (customer_id)
     {
         return await EndCounting(customer_id);
@@ -67,6 +71,10 @@ module.exports =
     {
         return await GetCompleteCountingByDate(date_start,date_end);
     },
+    GetCompleteCountingByDate2: async function (date_start,date_end)
+    {
+        return await GetCompleteCountingByDate2(date_start,date_end);
+    },
     GetCompleteTumbaCountingByDate: async function (date_start,date_end,tumba)
     {
         return await GetCompleteTumbaCountingByDate(date_start,date_end,tumba);
@@ -94,7 +102,32 @@ module.exports =
     UpdateStatusById: async function (counting_control_id,status_id)
     {
         return await UpdateStatusById(counting_control_id,status_id);
+    },
+    UpdateDepartmentStatusById: async function (counting_control_id,department_id,done)
+    {
+        return await UpdateDepartmentStatusById(counting_control_id,department_id,done);
+    },
+    GetFullStatusById: async function (counting_control_id)
+    {
+        return await GetFullStatusById(counting_control_id);
+    },
+    UpdateTimeRapportArrival: async function (counting_control_id,date_arrival,time_arrival)
+    {
+        return await UpdateTimeRapportArrival(counting_control_id,date_arrival,time_arrival);
+    },
+    UpdateTimeRapportLoadingStart: async function (counting_control_id,date_loading_start,time_loading_start)
+    {
+        return await UpdateTimeRapportLoadingStart(counting_control_id,date_loading_start,time_loading_start);
+    },
+    UpdateTimeRapportLoadingEnd: async function (counting_control_id,date_loading_end,time_loading_end)
+    {
+        return await UpdateTimeRapportLoadingEnd(counting_control_id,date_loading_end,time_loading_end);
+    },
+    UpdateTimeRapportDeparture: async function (counting_control_id,date_departure,time_departure)
+    {
+        return await UpdateTimeRapportDeparture(counting_control_id,date_departure,time_departure);
     }
+
 };
 
 const { Console } = require('console');
@@ -113,9 +146,51 @@ async function GetStatuses()
 
     return await Query(query);
 }
+async function GetFullStatusById(counting_control_id)
+{
+    var query = "select status_id,done_dry,done_cold,done_frozen,done_global from CountingControl WHERE CountingControl.id = " + counting_control_id + ";";
+
+    return await Query(query);
+}
 async function UpdateStatusById(counting_control_id,status_id)
 {
     var query = "UPDATE CountingControl SET status_id = " + status_id + " WHERE CountingControl.id = " + counting_control_id + ";";
+      
+    return await Query(query);
+}
+
+
+async function UpdateTimeRapportArrival(counting_control_id,date_arrival,time_arrival)
+{
+    var query = "UPDATE TimeRapport SET date_arrival = " + date_arrival + ", " + "time_arrival = " + time_arrival + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    return await Query(query);
+}
+async function UpdateTimeRapportLoadingStart(counting_control_id,date_loading_start,time_loading_start)
+{
+    var query = "UPDATE TimeRapport SET date_loading_start = " + date_loading_start + ", " + "time_loading_start = " + time_loading_start + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    
+    return await Query(query);
+}
+async function UpdateTimeRapportLoadingEnd(counting_control_id,date_loading_end,time_loading_end)
+{
+    var query = "UPDATE TimeRapport SET date_loading_end = " + date_loading_end + ", " + "time_loading_end = " + time_loading_end + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    return await Query(query);
+}
+async function UpdateTimeRapportDeparture(counting_control_id,date_departure,time_departure)
+{
+    var query = "UPDATE TimeRapport SET date_departure = " + date_departure + ", " + "time_departure = " + time_departure + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    return await Query(query);
+}
+
+
+async function UpdateDepartmentStatusById(counting_control_id,department_id,done)
+{   
+    var departments = ["done_dry","done_cold","done_frozen","done_global"];
+    var m_department = departments[department_id-1];
+
+    var m_done = (done === true) ? true:false;
+
+    var query = "UPDATE CountingControl SET " + m_department + " = " + m_done + " WHERE CountingControl.id = " + counting_control_id + ";";
       
     return await Query(query);
 }
@@ -249,7 +324,91 @@ async function GetCompleteTumbaCountingByDate(date_start,date_end,tumba)
 
     return await Query(query);
 }
+async function GetCompleteCountingByDate2(date_start,date_end)
+{
+    var query = "SELECT "+
+    "CountingControl.id AS counting_control_id, "+
+    "CountingControl.status_id AS status_id, "+
+    "CountingControl.created_date AS created_date, "+
+	"Customer.id AS customer_id, "+
+    "Customer.name AS customer_name, "+
+    "Customer.number AS customer_number, "+
+    "Status.name AS status_name, "+
+	"CountingControl.done_dry, "+
+	"CountingControl.done_cold, "+
+	"CountingControl.done_frozen, "+
+	"CountingControl.done_global, "+
+	
+    "c1.count AS dry_pp, "+
+    "c2.count AS dry_sp, "+
+    "c3.count AS dry_hp, "+
+    "c4.count AS dry_sk, "+
+	
+	"c5.count AS cold_pp, "+
+    "c6.count AS cold_sp, "+
+    "c7.count AS cold_hp, "+
+    "c8.count AS cold_sk, "+
+	
+	"c9.count AS frozen_pp, "+
+    "c10.count AS frozen_sp, "+
+    "c11.count AS frozen_hp, "+
+    "c12.count AS frozen_sk, "+
+	
+	"c13.count AS gray, "+
+    "c14.count AS wood, "+
+    "c15.count AS blue, "+
+	"c16.count AS red, "+
 
+    "TimeRapport.date_arrival as date_arrival, "+
+    "TimeRapport.date_loading_start as date_loading_start, "+
+    "TimeRapport.date_loading_end as date_loading_end, "+
+    "TimeRapport.date_departure as date_departure, "+
+
+    "TimeRapport.time_arrival as time_arrival, "+
+    "TimeRapport.time_loading_start as time_loading_start, "+
+    "TimeRapport.time_loading_end as time_loading_end, "+
+    "TimeRapport.time_departure as time_departure, "+
+
+    "TimeRapport.date_expected_arrival as date_expected_arrival, "+
+    "TimeRapport.date_expected_loading as date_expected_loading, "+
+    "TimeRapport.date_expected_departure as date_expected_departure, "+
+
+    "TimeRapport.time_expected_arrival as time_expected_arrival, "+
+    "TimeRapport.time_expected_loading as time_expected_loading, "+
+    "TimeRapport.time_expected_departure as time_expected_departure "+
+	
+    "FROM CountingControl "+
+
+    "LEFT JOIN Status ON CountingControl.status_id = Status.id "+
+    
+    "LEFT JOIN Customer ON CountingControl.customer_id = Customer.id "+
+
+    "LEFT JOIN TimeRapport ON TimeRapport.counting_control_id = CountingControl.id "+
+
+    "LEFT JOIN Counting c1 ON CountingControl.id=c1.counting_control_id AND c1.department_id=1 AND c1.pallet_type_id = 1 "+
+    "LEFT JOIN Counting c2 ON CountingControl.id=c2.counting_control_id AND c2.department_id=1 AND c2.pallet_type_id = 2 "+ 
+    "LEFT JOIN Counting c3 ON CountingControl.id=c3.counting_control_id AND c3.department_id=1 AND c3.pallet_type_id = 3 "+ 
+    "LEFT JOIN Counting c4 ON CountingControl.id=c4.counting_control_id AND c4.department_id=1 AND c4.pallet_type_id = 4 "+ 
+	
+	"LEFT JOIN Counting c5 ON CountingControl.id=c5.counting_control_id AND c5.department_id=2 AND c5.pallet_type_id = 1 "+
+    "LEFT JOIN Counting c6 ON CountingControl.id=c6.counting_control_id AND c6.department_id=2 AND c6.pallet_type_id = 2 "+ 
+    "LEFT JOIN Counting c7 ON CountingControl.id=c7.counting_control_id AND c7.department_id=2 AND c7.pallet_type_id = 3 "+ 
+    "LEFT JOIN Counting c8 ON CountingControl.id=c8.counting_control_id AND c8.department_id=2 AND c8.pallet_type_id = 4 "+ 
+	
+	"LEFT JOIN Counting c9 ON CountingControl.id=c9.counting_control_id AND c9.department_id=3 AND c9.pallet_type_id = 1 "+
+    "LEFT JOIN Counting c10 ON CountingControl.id=c10.counting_control_id AND c10.department_id=3 AND c10.pallet_type_id = 2 "+ 
+    "LEFT JOIN Counting c11 ON CountingControl.id=c11.counting_control_id AND c11.department_id=3 AND c11.pallet_type_id = 3 "+ 
+    "LEFT JOIN Counting c12 ON CountingControl.id=c12.counting_control_id AND c12.department_id=3 AND c12.pallet_type_id = 4 "+ 
+	
+	"LEFT JOIN Counting c13 ON CountingControl.id=c13.counting_control_id AND c13.department_id=5 AND c13.pallet_type_id = 5 "+
+    "LEFT JOIN Counting c14 ON CountingControl.id=c14.counting_control_id AND c14.department_id=5 AND c14.pallet_type_id = 6 "+ 
+    "LEFT JOIN Counting c15 ON CountingControl.id=c15.counting_control_id AND c15.department_id=5 AND c15.pallet_type_id = 7 "+ 
+    "LEFT JOIN Counting c16 ON CountingControl.id=c16.counting_control_id AND c16.department_id=5 AND c16.pallet_type_id = 8 "+
+    
+    "WHERE CountingControl.created_date >= " + date_start + " AND CountingControl.created_date <= " + date_end + ";"
+    
+    return await Query(query);
+}
 
 
 
@@ -492,6 +651,23 @@ async function StartCountingAtDate(customer_id,date_string,time_string)
         return "[]";
     }  
 }
+async function StartCountingAtDate2(customer_id,date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+{
+    if (await CustomerExists(customer_id))
+    {
+        if (!await HasOngoingCount(customer_id, date_string))
+        {
+            var result = await InitializeCounting(customer_id, date_string, time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure);
+            LockCustomer(customer_id, true);            
+        }
+        result = await GetCountingByCustomerIdAndDate(customer_id,date_string);
+        return result;
+    }
+    else
+    {
+        return "[]";
+    } 
+}
 async function StartCounting(customer_id)
 {
     var date_string = GetCurrentDateString();
@@ -560,6 +736,70 @@ async function InitializeCounting(customer_id, date_string,time_string)
         });    
     });
 }
+
+
+
+
+
+
+
+
+async function InitializeCounting(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+{ 
+    var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global)"; 
+
+    query_string_cc += " values(" + customer_id + ",2," +  date_string + "," + time_string + ",False,False,False,False);"
+
+
+    await Query(query_string_cc).then(async (res) =>     
+    {    
+
+        var counting_control_id = res.insertId;    
+        var query_string_tr = "insert into TimeRapport(counting_control_id, date_arrival,date_loading_start, date_loading_end, date_departure,time_arrival,time_loading_start, time_loading_end, time_departure,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure) values (" + counting_control_id + ",'','','','','','','',''," + date_expected_arrival + "," + time_expected_arrival + "," + date_expected_loading + "," + time_expected_loading + "," + date_expected_departure + "," + time_expected_departure + ")";
+
+        await Query(query_string_tr).then(async (res) =>     
+        {    
+
+            var query_string = "insert into Counting(count, created_date, created_time, last_changed_date, last_changed_by, committed, pallet_type_id, department_id, customer_id, counting_control_id) values";
+
+            for (i = 1; i < 4; i++)
+            {
+                for (j = 1; j < 5; j++)
+                {
+                    var department_id = i;
+                    var pallet_type_id = j;
+                    query_string += "(0," + date_string + ", " + time_string + ", " + date_string + ", " + "'someone'" + ", " + "False," + pallet_type_id + "," + department_id + "," + customer_id +  "," + counting_control_id + "),";
+                }
+            }
+            for (i = 5; i < 9; i++)
+            {
+                var department_id = 5;
+                var pallet_type_id = i;
+                var query_string = query_string += "(0," + date_string + ", " + time_string + ", " + date_string + ", " + "'someone'" + ", " + "False," + pallet_type_id + "," + department_id + "," + customer_id + "," + counting_control_id + ")" + ((i == 8) ? ";" : ",");
+            }   
+	console.log(query_string);        
+            return await Query(query_string);
+
+        });    
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function LockCustomer(customer_id, flag)
 {
     var f = (flag == true) ? true : fasle;
