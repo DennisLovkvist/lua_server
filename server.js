@@ -21,7 +21,7 @@ app.use(function (req, res, next) {
 
 app.post('/UpdateTimeRapportArrival', async (req, res) => {
     
-    var id = req.param("counting_control_id").toString().replace(/[^0-9]/g, '');
+    var id = req.param("time_rapport_id").toString().replace(/[^0-9]/g, '');
     var date_arrival = req.param("date_arrival");
     var time_arrival = req.param("time_arrival");
    
@@ -37,7 +37,7 @@ app.post('/UpdateTimeRapportArrival', async (req, res) => {
 });
 app.post('/UpdateTimeRapportLoadingStart', async (req, res) => {
     
-    var id = req.param("counting_control_id").toString().replace(/[^0-9]/g, '');
+    var id = req.param("time_rapport_id").toString().replace(/[^0-9]/g, '');
     var date_loading_start = req.param("date_loading_start");
     var time_loading_start = req.param("time_loading_start");
    
@@ -53,7 +53,7 @@ app.post('/UpdateTimeRapportLoadingStart', async (req, res) => {
 });
 app.post('/UpdateTimeRapportLoadingEnd', async (req, res) => {
     
-    var id = req.param("counting_control_id").toString().replace(/[^0-9]/g, '');
+    var id = req.param("time_rapport_id").toString().replace(/[^0-9]/g, '');
     var date_loading_end = req.param("date_loading_end");
     var time_loading_end = req.param("time_loading_end");
    
@@ -69,7 +69,7 @@ app.post('/UpdateTimeRapportLoadingEnd', async (req, res) => {
 });
 app.post('/UpdateTimeRapportDeparture', async (req, res) => {
     
-    var id = req.param("counting_control_id").toString().replace(/[^0-9]/g, '');
+    var id = req.param("time_rapport_id").toString().replace(/[^0-9]/g, '');
     var date_departure = req.param("date_departure");
     var time_departure = req.param("time_departure");
    
@@ -416,6 +416,32 @@ app.get('/GetPalletTypes', async (req, res) => {
     res.send(rows);
 });
 
+app.post('/CreateTimeRapport', async (req, res) => {
+
+    var id = req.body.counting_control_id;
+
+    var date_expected_arrival = "'"+req.body.date_expected_arrival+"'";
+    var time_expected_arrival = "'"+req.body.time_expected_arrival+"'";
+
+    var date_expected_loading = "'"+req.body.date_expected_loading+"'";
+    var time_expected_loading = "'"+req.body.time_expected_loading+"'";
+
+    var date_expected_departure = "'"+req.body.date_expected_departure+"'";
+    var time_expected_departure = "'"+req.body.time_expected_departure+"'";
+ 
+    var rows = await queries_maraidb.CreateTimeRapport(id,date_expected_arrival,date_expected_loading,date_expected_departure,time_expected_arrival,time_expected_loading,time_expected_departure);
+    res.send(rows);
+
+});
+app.post('/DeleteTimeRapport', async (req, res) => {
+
+    var id = req.body.time_rapport_id;
+ 
+    var rows = await queries_maraidb.DeleteTimeRapport(id);
+    res.send(rows);
+
+});
+
 app.get('/StartCounting/:id', async (req, res) => {
 
     var id = req.param("id");
@@ -502,6 +528,8 @@ app.post('/StartCountingAtDate2/', async (req, res) => {
     var date_expected_departure = req.body.date_expected_departure;
     var time_expected_departure = req.body.time_expected_departure;
 
+    var route = req.body.route;
+
     number = number.toString().replace(/[^0-9]/g, '');
 
     date = common.ParseDate(date);
@@ -530,7 +558,7 @@ app.post('/StartCountingAtDate2/', async (req, res) => {
             if(rows.length > 0)
             {
                 var id = rows[0].id;
-                rows = await queries_maraidb.StartCountingAtDate2(id,date,time,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure);
+                rows = await queries_maraidb.StartCountingAtDate2(id,date,time,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route);
                 res.send(rows);
             }
             else

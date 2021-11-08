@@ -28,9 +28,9 @@ module.exports =
     {
         return await StartCountingAtDate(customer_number,date_string,time_string);
     },
-    StartCountingAtDate2: async function (customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+    StartCountingAtDate2: async function (customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route)
     {
-        return await StartCountingAtDate2(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure);
+        return await StartCountingAtDate2(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route);
     },
     EndCounting: async function (customer_id)
     {
@@ -111,27 +111,49 @@ module.exports =
     {
         return await GetFullStatusById(counting_control_id);
     },
-    UpdateTimeRapportArrival: async function (counting_control_id,date_arrival,time_arrival)
+    UpdateTimeRapportArrival: async function (time_rapport_id,date_arrival,time_arrival)
     {
-        return await UpdateTimeRapportArrival(counting_control_id,date_arrival,time_arrival);
+        return await UpdateTimeRapportArrival(time_rapport_id,date_arrival,time_arrival);
     },
-    UpdateTimeRapportLoadingStart: async function (counting_control_id,date_loading_start,time_loading_start)
+    UpdateTimeRapportLoadingStart: async function (time_rapport_id,date_loading_start,time_loading_start)
     {
-        return await UpdateTimeRapportLoadingStart(counting_control_id,date_loading_start,time_loading_start);
+        return await UpdateTimeRapportLoadingStart(time_rapport_id,date_loading_start,time_loading_start);
     },
-    UpdateTimeRapportLoadingEnd: async function (counting_control_id,date_loading_end,time_loading_end)
+    UpdateTimeRapportLoadingEnd: async function (time_rapport_id,date_loading_end,time_loading_end)
     {
-        return await UpdateTimeRapportLoadingEnd(counting_control_id,date_loading_end,time_loading_end);
+        return await UpdateTimeRapportLoadingEnd(time_rapport_id,date_loading_end,time_loading_end);
     },
-    UpdateTimeRapportDeparture: async function (counting_control_id,date_departure,time_departure)
+    UpdateTimeRapportDeparture: async function (time_rapport_id,date_departure,time_departure)
     {
-        return await UpdateTimeRapportDeparture(counting_control_id,date_departure,time_departure);
+        return await UpdateTimeRapportDeparture(time_rapport_id,date_departure,time_departure);
+    },
+    CreateTimeRapport: async function (counting_control_id,date_expected_arrival,date_expected_loading,date_expected_departure,time_expected_arrival,time_expected_loading,time_expected_departure)
+    {
+        return await CreateTimeRapport(counting_control_id,date_expected_arrival,date_expected_loading,date_expected_departure,time_expected_arrival,time_expected_loading,time_expected_departure);
+    },
+    DeleteTimeRapport: async function (time_rapport_id)
+    {
+        return await DeleteTimeRapport(time_rapport_id);
     }
 
 };
 
 const { Console } = require('console');
 const mariadb = require('mariadb');
+
+
+async function CreateTimeRapport(counting_control_id,date_expected_arrival,date_expected_loading,date_expected_departure,time_expected_arrival,time_expected_loading,time_expected_departure)
+{
+    var query = "insert into TimeRapport(counting_control_id, date_arrival,date_loading_start, date_loading_end, date_departure,time_arrival,time_loading_start, time_loading_end, time_departure,date_expected_arrival,date_expected_loading,date_expected_departure,time_expected_arrival,time_expected_loading,time_expected_departure) values (" + counting_control_id + ",'','','','','','','',''," +date_expected_arrival+","+date_expected_loading+","+date_expected_departure+","+time_expected_arrival+","+time_expected_loading+","+time_expected_departure +")";
+
+    return await Query(query);
+}
+async function DeleteTimeRapport(time_rapport_id)
+{
+    var query = "delete from TimeRapport where id = " + time_rapport_id + ";";
+
+    return await Query(query);
+}
 
 async function CreateCustomer(name,number,max_height,tumba)
 {
@@ -160,25 +182,25 @@ async function UpdateStatusById(counting_control_id,status_id)
 }
 
 
-async function UpdateTimeRapportArrival(counting_control_id,date_arrival,time_arrival)
+async function UpdateTimeRapportArrival(time_rapport_id,date_arrival,time_arrival)
 {
-    var query = "UPDATE TimeRapport SET date_arrival = " + date_arrival + ", " + "time_arrival = " + time_arrival + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    var query = "UPDATE TimeRapport SET date_arrival = " + date_arrival + ", " + "time_arrival = " + time_arrival + " WHERE TimeRapport.id = " + time_rapport_id + ";";
     return await Query(query);
 }
-async function UpdateTimeRapportLoadingStart(counting_control_id,date_loading_start,time_loading_start)
+async function UpdateTimeRapportLoadingStart(time_rapport_id,date_loading_start,time_loading_start)
 {
-    var query = "UPDATE TimeRapport SET date_loading_start = " + date_loading_start + ", " + "time_loading_start = " + time_loading_start + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    var query = "UPDATE TimeRapport SET date_loading_start = " + date_loading_start + ", " + "time_loading_start = " + time_loading_start + " WHERE TimeRapport.id = " + time_rapport_id + ";";
     
     return await Query(query);
 }
-async function UpdateTimeRapportLoadingEnd(counting_control_id,date_loading_end,time_loading_end)
+async function UpdateTimeRapportLoadingEnd(time_rapport_id,date_loading_end,time_loading_end)
 {
-    var query = "UPDATE TimeRapport SET date_loading_end = " + date_loading_end + ", " + "time_loading_end = " + time_loading_end + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    var query = "UPDATE TimeRapport SET date_loading_end = " + date_loading_end + ", " + "time_loading_end = " + time_loading_end + " WHERE TimeRapport.id = " + time_rapport_id + ";";
     return await Query(query);
 }
-async function UpdateTimeRapportDeparture(counting_control_id,date_departure,time_departure)
+async function UpdateTimeRapportDeparture(time_rapport_id,date_departure,time_departure)
 {
-    var query = "UPDATE TimeRapport SET date_departure = " + date_departure + ", " + "time_departure = " + time_departure + " WHERE TimeRapport.counting_control_id = " + counting_control_id + ";";
+    var query = "UPDATE TimeRapport SET date_departure = " + date_departure + ", " + "time_departure = " + time_departure + " WHERE TimeRapport.id = " + time_rapport_id + ";";
     return await Query(query);
 }
 
@@ -330,6 +352,7 @@ async function GetCompleteCountingByDate2(date_start,date_end)
     "CountingControl.id AS counting_control_id, "+
     "CountingControl.status_id AS status_id, "+
     "CountingControl.created_date AS created_date, "+
+    "CountingControl.route AS route, "+
 	"Customer.id AS customer_id, "+
     "Customer.name AS customer_name, "+
     "Customer.number AS customer_number, "+
@@ -375,7 +398,8 @@ async function GetCompleteCountingByDate2(date_start,date_end)
 
     "TimeRapport.time_expected_arrival as time_expected_arrival, "+
     "TimeRapport.time_expected_loading as time_expected_loading, "+
-    "TimeRapport.time_expected_departure as time_expected_departure "+
+    "TimeRapport.time_expected_departure as time_expected_departure, "+
+    "TimeRapport.id as time_rapport_id "+
 	
     "FROM CountingControl "+
 
@@ -651,13 +675,13 @@ async function StartCountingAtDate(customer_id,date_string,time_string)
         return "[]";
     }  
 }
-async function StartCountingAtDate2(customer_id,date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+async function StartCountingAtDate2(customer_id,date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route)
 {
     if (await CustomerExists(customer_id))
     {
         if (!await HasOngoingCount(customer_id, date_string))
         {
-            var result = await InitializeCounting(customer_id, date_string, time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure);
+            var result = await InitializeCounting(customer_id, date_string, time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route);
             LockCustomer(customer_id, true);            
         }
         result = await GetCountingByCustomerIdAndDate(customer_id,date_string);
@@ -744,11 +768,11 @@ async function InitializeCounting(customer_id, date_string,time_string)
 
 
 
-async function InitializeCounting(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure)
+async function InitializeCounting(customer_id, date_string,time_string,date_expected_arrival,time_expected_arrival,date_expected_loading,time_expected_loading,date_expected_departure,time_expected_departure,route)
 { 
-    var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global)"; 
+    var query_string_cc ="insert into CountingControl(customer_id,status_id,created_date,created_time,done_dry,done_cold,done_frozen,done_global,route)"; 
 
-    query_string_cc += " values(" + customer_id + ",2," +  date_string + "," + time_string + ",False,False,False,False);"
+    query_string_cc += " values(" + customer_id + ",2," +  date_string + "," + time_string + ",False,False,False,False,'" + route  + "');"
 
 
     await Query(query_string_cc).then(async (res) =>     
