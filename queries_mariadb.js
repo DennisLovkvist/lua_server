@@ -527,7 +527,9 @@ async function GetCountingControlByDateAndStatus(date, status)
     "CountingControl.done_dry as done_dry," +
     "CountingControl.done_cold as done_cold," +
     "CountingControl.done_frozen as done_frozen," +
-    "CountingControl.done_global as done_global " +
+    "CountingControl.done_global as done_global, " +
+    "CountingControl.created_date ," +
+    "CountingControl.created_time " +
     "from CountingControl " +
     "inner join Customer on Customer.id = CountingControl.customer_id " + 
     "inner join Status on Status.id = CountingControl.status_id " + 
